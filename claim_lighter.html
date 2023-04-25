@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claim Lighter</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-database.js"></script>
+  <script>
+    // Your Firebase configuration goes here
+    const firebaseConfig = {
+  apiKey: "AIzaSyBHviaBeCBvg_R1nPF8C1bG5CbpIrG2VtI",
+  authDomain: "track-your-lighter.firebaseapp.com",
+  databaseURL: "https://track-your-lighter-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "track-your-lighter",
+  storageBucket: "track-your-lighter.appspot.com",
+  messagingSenderId: "411372100740",
+  appId: "1:411372100740:web:c383ddd50bb2170cc076d1",
+  measurementId: "G-FBF3NTDCF3"
+};
+      // ...
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function getParameterByName(name, url = window.location.href) {
+      name = name.replace(/[\[\]]/g, '\\$&');
+      const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+      const results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+    function claimLighter(e) {
+      e.preventDefault();
+      const lighterId = getParameterByName('lighter_id');
+      const pseudonym = document.getElementById('pseudonym').value;
+
+      if (lighterId && pseudonym) {
+        const lighterRef = db.ref('lighters/' + lighterId);
+
+        lighterRef.once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            alert('This lighter has already been claimed.');
+          } else {
+            lighterRef.set({
+              id: lighterId,
+              owner: pseudonym
+            }).then(() => {
+              alert('You have successfully claimed the lighter.');
+            }).catch((error) => {
+              alert('An error occurred while claiming the lighter.');
+            });
+          }
+        });
+      } else {
+        alert('Please enter a valid pseudonym.');
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Claim Lighter</h1>
+  <form id="claim-form" onsubmit="claimLighter(event)">
+    <label for="pseudonym">Enter your pseudonym:</label>
+    <input type="text" id="pseudonym" name="pseudonym" required>
+    <button type="submit">Claim Lighter</button>
+  </form>
+</body>
+</html>
